@@ -7,49 +7,109 @@ import FormattedDate from '../components/FormattedDate.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+// 我们依然接收所有 props，但 heroImage 在布局中不再使用
+const { title, description, pubDate, updatedDate } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="zh-CN">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead {title} {description} />
 		<style>
+			/* 引入与全站统一的字体 */
+			@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+			.faye-title {
+				font-family: 'Playfair Display', serif;
+			}
+			
+			/* 统一的主内容区布局 */
 			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
 				width: 100%;
-			}
-			.hero-image img {
-				display: block;
+				max-width: 800px;
 				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
+				padding: 2rem;
+				line-height: 1.8; /* 优化阅读的行高 */
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
+
+			/* 全新的文章标题区域 */
+			.post-header {
+				margin-bottom: 3rem;
+				border-bottom: 1px solid #EAEAEA;
+				padding-bottom: 2rem;
 				text-align: center;
-				line-height: 1;
 			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
+
+			.post-header .title {
+				font-size: 3rem;
+				font-weight: 400;
+				margin: 0 0 1rem 0;
+				color: #36454F;
 			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+
+			.post-header .meta {
+				color: #A9A9A9;
+				font-size: 0.9rem;
 			}
-			.last-updated-on {
+
+			.post-header .last-updated-on {
 				font-style: italic;
+				margin-top: 0.5rem;
+			}
+			
+			/* 全新的正文排版样式 */
+			.prose {
+				font-size: 1.1rem;
+				color: #36454F;
+			}
+			
+			/* 设定正文内各种元素的样式 */
+			.prose > :first-child {
+				margin-top: 0; /* 移除正文第一个元素的上边距 */
+			}
+
+			.prose h2, .prose h3, .prose h4 {
+				font-family: 'Playfair Display', serif; /* 正文中的标题也使用艺术字体 */
+				margin-top: 2.5em;
+				margin-bottom: 1em;
+				color: #36454F;
+			}
+			
+			.prose p {
+				margin-bottom: 1.5em;
+			}
+			
+			.prose a {
+				color: #4682B4; /* 钢蓝色链接 */
+				text-decoration: none;
+				border-bottom: 1px dotted #4682B4;
+				transition: background-color 0.2s ease;
+			}
+			
+			.prose a:hover {
+				background-color: rgba(70, 130, 180, 0.1); /* 鼠标悬浮时淡蓝色背景 */
+			}
+
+			.prose img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 4px; /* 为内容中的图片添加圆角 */
+				margin: 2.5em auto; /* 图片居中并有上下间距 */
+				display: block;
+			}
+
+			.prose blockquote {
+				border-left: 3px solid #4682B4; /* 引用块使用主题色 */
+				padding-left: 1.5rem;
+				margin-left: 0;
+				margin-right: 0;
+				font-style: italic;
+				color: #666;
+			}
+
+			.prose hr {
+				border: none;
+  				border-top: 1px dashed #D3D3D3; /* 虚线分隔线 */
+				margin: 3em auto;
 			}
 		</style>
 	</head>
@@ -58,25 +118,24 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<Header />
 		<main>
 			<article>
-				<div class="hero-image">
-					{heroImage && <img width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+				<!-- 移除了 heroImage，用全新的 post-header 代替 -->
+				<div class="post-header">
+					<h1 class="title faye-title">{title}</h1>
+					<div class="meta">
+						<FormattedDate date={pubDate} />
+						{
+							updatedDate && (
+								<div class="last-updated-on">
+									(更新于 <FormattedDate date={updatedDate} />)
+								</div>
+							)
+						}
 					</div>
-					<slot />
+				</div>
+
+				<!-- .prose 类将美化所有 Markdown 转换来的 HTML -->
+				<div class="prose">
+					<slot /> <!-- 你的日记正文将在这里插入 -->
 				</div>
 			</article>
 		</main>

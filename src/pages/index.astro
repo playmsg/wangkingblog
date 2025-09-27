@@ -3,47 +3,168 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { getCollection } from 'astro:content';
+import fayeData from '../data/fayeQuotes.json'; // 1. 导入精简后的 JSON 数据
+
+const { lyrics } = fayeData;
+
+// 2. 随机选择一个包含歌词和歌名的对象
+const randomIndex = Math.floor(Math.random() * lyrics.length);
+const randomQuote = lyrics[randomIndex]; // 现在 randomQuote 同时包含了 quote 和 from
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const latestPost = posts.length > 0 ? posts[0] : null;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+			.faye-title {
+				font-family: 'Playfair Display', serif;
+			}
+
+			main {
+				width: 100%;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 2rem;
+				line-height: 1.7;
+			}
+
+			.intro-quote {
+				text-align: center;
+				margin: 4rem 0;
+				padding: 1rem;
+				color: #4682B4;
+			}
+
+			.intro-quote blockquote {
+				margin: 0;
+				padding: 0;
+				font-style: italic;
+				font-size: 1.1rem;
+				border: none; /* 移除 blockquote 的默认样式 */
+			}
+
+			.entry-section {
+				text-align: center;
+				margin-bottom: 5rem;
+			}
+
+			.entry-section h1 {
+				font-size: 3rem;
+				font-weight: 400;
+				letter-spacing: 0.3rem;
+				margin-bottom: 1rem;
+				color: #36454F;
+			}
+
+			.entry-section a {
+				text-decoration: none;
+				color: #A9A9A9;
+				transition: color 0.3s ease;
+			}
+
+			.entry-section a:hover {
+				color: #4682B4;
+			}
+
+			.latest-post-card {
+				border: 1px solid #D3D3D3;
+				padding: 2rem;
+				margin-bottom: 5rem;
+				background-color: #fdfdfd;
+				border-radius: 4px;
+			}
+			
+			.latest-post-card a {
+				text-decoration: none;
+				color: inherit;
+			}
+
+			.latest-post-card h2 {
+				color: #4682B4;
+				border-bottom: 2px solid #EAEAEA;
+				padding-bottom: 0.5rem;
+				margin-bottom: 1.5rem;
+				font-weight: 500;
+			}
+			
+			.latest-post-card h3 {
+				color: #36454F;
+				margin-bottom: 0.5rem;
+			}
+
+			.latest-post-card .date {
+				font-size: 0.9rem;
+				color: #A9A9A9;
+				margin-bottom: 1rem;
+				display: block;
+			}
+
+			.about-me {
+				text-align: right;
+				border-top: 1px dashed #D3D3D3;
+				padding-top: 2rem;
+			}
+
+			.about-me h3 {
+				font-weight: normal;
+				letter-spacing: 0.1rem;
+				color: #36454F;
+			}
+
+			.about-me p {
+				font-size: 0.9rem;
+				color: #A9A9A9;
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to <a href="https://docs.astro.build/"
-					>read the docs
-				</a> or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out <a
-					href="https://github.com/Charca/astro-blog-template"
-					>astro-blog-template
-				</a> by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<div class="intro-quote">
+                <!-- 修改点 1: 显示歌词 -->
+				<blockquote class="faye-title">“{randomQuote.quote}”</blockquote>
+                <!-- 修改点 2: 移除了原来的 footer 元素 -->
+			</div>
+
+			<section class="entry-section">
+                <!-- 修改点 3: h1 显示上面歌词对应的歌名 -->
+				<h1 class="faye-title">{randomQuote.from}</h1> 
+				<a href="/blog">进入我的日记</a>
+			</section>
+
+			{latestPost && (
+				<section class="latest-post-card">
+					<h2 class="faye-title">胡思亂想</h2>
+					<a href={`/blog/${latestPost.id}/`}>
+						<h3>{latestPost.data.title}</h3>
+						<time class="date" datetime={latestPost.data.pubDate.toISOString()}>
+							{new Date(latestPost.data.pubDate).toLocaleDateString('zh-CN', {
+								year: 'numeric',
+								month: 'long',
+								day: 'numeric',
+							})}
+						</time>
+						<p>{latestPost.data.description}</p>
+					</a>
+				</section>
+			)}
+
+			<section class="about-me">
+				<h3 class="faye-title">一人分飾兩角</h3>
+				<p>一个记录自己日常思绪的角落。</p>
+				<p>{SITE_TITLE}</p>
+			</section>
+
 		</main>
 		<Footer />
 	</body>

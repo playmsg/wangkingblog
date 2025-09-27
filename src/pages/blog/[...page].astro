@@ -1,0 +1,145 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../../components/FormattedDate.astro';
+
+// 1. Astro 的魔法在这里：getStaticPaths 函数
+export async function getStaticPaths({ paginate }) {
+  const posts = (await getCollection('blog')).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  );
+
+  // 2. 调用 paginate 函数，告诉它每页显示多少篇文章
+  return paginate(posts, { pageSize: 5 }); // <-- 在这里设置每页的文章数量
+}
+
+// 3. 从 props 中获取当前页的数据
+// page prop 是由 paginate() 自动注入的
+const { page } = Astro.props;
+const pageTitle = `所有日记 - 第 ${page.currentPage} 页 | ${SITE_TITLE}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={pageTitle} description="在这里找到所有的思绪碎片。" />
+		<style>
+			/* 这里的 CSS 代码和之前基本一样 */
+			@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+			.faye-title {
+				font-family: 'Playfair Display', serif;
+			}
+
+			main {
+				width: 100%;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 2rem;
+				line-height: 1.7;
+			}
+			
+			main .page-title {
+				text-align: center;
+				font-size: 3rem;
+				font-weight: 400;
+				letter-spacing: 0.3rem;
+				margin-top: 2rem;
+				margin-bottom: 4rem;
+				color: #36454F;
+			}
+
+			main ul.post-list {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: block; 
+				width: 100%;
+			}
+			
+			main ul.post-list li {
+				width: 100% !important; 
+				margin-bottom: 1.5rem;
+			}
+			
+			main ul.post-list li a {
+				display: block; padding: 2rem; border: 1px solid #D3D3D3; background-color: #fdfdfd;
+				border-radius: 4px; text-decoration: none; color: inherit;
+				transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+			}
+			
+			main ul.post-list li a:hover {
+				border-color: #4682B4; transform: translateY(-4px); box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+			}
+
+			main ul.post-list h3 { color: #36454F; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; }
+			main ul.post-list .date { font-size: 0.9rem; color: #A9A9A9; margin-bottom: 1rem; display: block; }
+			main ul.post-list p { margin-bottom: 0; color: #666; }
+
+			/* --- 全新的分页导航样式 --- */
+			.pagination {
+				display: flex;
+				justify-content: space-between;
+				margin-top: 4rem;
+				font-family: 'Playfair Display', serif;
+			}
+
+			.pagination a {
+				text-decoration: none;
+				color: #4682B4;
+				border: 1px solid #D3D3D3;
+				padding: 0.5rem 1.5rem;
+				border-radius: 4px;
+				transition: background-color 0.3s ease, color 0.3s ease;
+			}
+
+			.pagination a:hover {
+				background-color: #4682B4;
+				color: #fff;
+			}
+
+			.pagination .disabled {
+				color: #A9A9A9;
+				border-color: #EAEAEA;
+				pointer-events: none; /* 让它不可点击 */
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1 class="page-title faye-title">时光的残影</h1>
+			<section>
+				<ul class="post-list">
+					{
+						// 4. 循环的是 page.data，而不是所有 posts
+						page.data.map((post) => (
+							<li>
+								<a href={`/blog/${post.id}/`}>
+									<h3 class="title">{post.data.title}</h3>
+									<div class="date"><FormattedDate date={post.data.pubDate} /></div>
+									<p>{post.data.description}</p>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+
+			<!-- 5. 添加分页导航链接 -->
+			<nav class="pagination">
+				<a href={page.url.prev} class:list={{ disabled: !page.url.prev }}>
+					&larr; 新一些的
+				</a>
+				<span>第 {page.currentPage} / {page.lastPage} 页</span>
+				<a href={page.url.next} class:list={{ disabled: !page.url.next }}>
+					旧一些的 &rarr;
+				</a>
+			</nav>
+		</main>
+		<Footer />
+	</body>
+</html>
