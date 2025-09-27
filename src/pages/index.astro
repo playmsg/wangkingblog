@@ -4,19 +4,13 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { getCollection } from 'astro:content';
-import fayeData from '../data/fayeQuotes.json'; // 1. 导入精简后的 JSON 数据
-
-const { lyrics } = fayeData;
-
-// 2. 随机选择一个包含歌词和歌名的对象
-const randomIndex = Math.floor(Math.random() * lyrics.length);
-const randomQuote = lyrics[randomIndex]; // 现在 randomQuote 同时包含了 quote 和 from
+import fayeData from '../data/fayeQuotes.json'; // 1. 我们依然在服务端读取数据
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
-const latestPost = posts.length > 0 ? posts[0] : null;
+const latestPosts = posts.slice(0, 5);
 ---
 
 <!doctype html>
@@ -24,138 +18,60 @@ const latestPost = posts.length > 0 ? posts[0] : null;
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			/* 这里的所有 CSS 样式保持不变 */
 			@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
-
-			.faye-title {
-				font-family: 'Playfair Display', serif;
-			}
-
-			main {
-				width: 100%;
-				max-width: 800px;
-				margin: 0 auto;
-				padding: 2rem;
-				line-height: 1.7;
-			}
-
-			.intro-quote {
-				text-align: center;
-				margin: 4rem 0;
-				padding: 1rem;
-				color: #4682B4;
-			}
-
-			.intro-quote blockquote {
-				margin: 0;
-				padding: 0;
-				font-style: italic;
-				font-size: 1.1rem;
-				border: none; /* 移除 blockquote 的默认样式 */
-			}
-
-			.entry-section {
-				text-align: center;
-				margin-bottom: 5rem;
-			}
-
-			.entry-section h1 {
-				font-size: 3rem;
-				font-weight: 400;
-				letter-spacing: 0.3rem;
-				margin-bottom: 1rem;
-				color: #36454F;
-			}
-
-			.entry-section a {
-				text-decoration: none;
-				color: #A9A9A9;
-				transition: color 0.3s ease;
-			}
-
-			.entry-section a:hover {
-				color: #4682B4;
-			}
-
-			.latest-post-card {
-				border: 1px solid #D3D3D3;
-				padding: 2rem;
-				margin-bottom: 5rem;
-				background-color: #fdfdfd;
-				border-radius: 4px;
-			}
-			
-			.latest-post-card a {
-				text-decoration: none;
-				color: inherit;
-			}
-
-			.latest-post-card h2 {
-				color: #4682B4;
-				border-bottom: 2px solid #EAEAEA;
-				padding-bottom: 0.5rem;
-				margin-bottom: 1.5rem;
-				font-weight: 500;
-			}
-			
-			.latest-post-card h3 {
-				color: #36454F;
-				margin-bottom: 0.5rem;
-			}
-
-			.latest-post-card .date {
-				font-size: 0.9rem;
-				color: #A9A9A9;
-				margin-bottom: 1rem;
-				display: block;
-			}
-
-			.about-me {
-				text-align: right;
-				border-top: 1px dashed #D3D3D3;
-				padding-top: 2rem;
-			}
-
-			.about-me h3 {
-				font-weight: normal;
-				letter-spacing: 0.1rem;
-				color: #36454F;
-			}
-
-			.about-me p {
-				font-size: 0.9rem;
-				color: #A9A9A9;
-			}
+			.faye-title { font-family: 'Playfair Display', serif; }
+			main { width: 100%; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.7; }
+			.intro-quote { text-align: center; margin: 4rem 0; padding: 1rem; color: #4682B4; }
+			.intro-quote blockquote { margin: 0; padding: 0; font-style: italic; font-size: 1.1rem; border: none; }
+			.entry-section { text-align: center; margin-bottom: 5rem; }
+			.entry-section h1 { font-size: 3rem; font-weight: 400; letter-spacing: 0.3rem; margin-bottom: 1rem; color: #36454F; }
+			.entry-section a { text-decoration: none; color: #A9A9A9; transition: color 0.3s ease; }
+			.entry-section a:hover { color: #4682B4; }
+			.recent-posts-section { margin-bottom: 5rem; }
+			.recent-posts-section h2 { color: #4682B4; border-bottom: 2px solid #EAEAEA; padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-weight: 500; }
+			.post-list { list-style: none; padding: 0; margin: 0; }
+			.post-list li a { display: block; padding: 1.5rem; border: 1px solid #D3D3D3; margin-bottom: 1rem; background-color: #fdfdfd; border-radius: 4px; text-decoration: none; color: inherit; transition: border-color 0.3s ease, transform 0.3s ease; }
+			.post-list li a:hover { border-color: #4682B4; transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+			.post-list h3 { color: #36454F; margin-top: 0; margin-bottom: 0.5rem; }
+			.post-list .date { font-size: 0.9rem; color: #A9A9A9; margin-bottom: 1rem; display: block; }
+			.post-list p { margin-bottom: 0; }
+			.about-me { text-align: right; border-top: 1px dashed #D3D3D3; padding-top: 2rem; }
+			.about-me h3 { font-weight: normal; letter-spacing: 0.1rem; color: #36454F; }
+			.about-me p { font-size: 0.9rem; color: #A9A9A9; }
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
 			<div class="intro-quote">
-                <!-- 修改点 1: 显示歌词 -->
-				<blockquote class="faye-title">“{randomQuote.quote}”</blockquote>
-                <!-- 修改点 2: 移除了原来的 footer 元素 -->
+				{/* 2. 我们创建了两个“占位符”元素，并给它们 ID */}
+				<blockquote id="random-quote" class="faye-title"></blockquote>
 			</div>
 
 			<section class="entry-section">
-                <!-- 修改点 3: h1 显示上面歌词对应的歌名 -->
-				<h1 class="faye-title">{randomQuote.from}</h1> 
-				<a href="/blog">进入我的日记</a>
+				<h1 id="random-title" class="faye-title"></h1> 
+				<a href="/blog">查看所有日记</a>
 			</section>
 
-			{latestPost && (
-				<section class="latest-post-card">
+			{latestPosts.length > 0 && (
+				<section class="recent-posts-section">
 					<h2 class="faye-title">胡思亂想</h2>
-					<a href={`/blog/${latestPost.id}/`}>
-						<h3>{latestPost.data.title}</h3>
-						<time class="date" datetime={latestPost.data.pubDate.toISOString()}>
-							{new Date(latestPost.data.pubDate).toLocaleDateString('zh-CN', {
-								year: 'numeric',
-								month: 'long',
-								day: 'numeric',
-							})}
-						</time>
-						<p>{latestPost.data.description}</p>
-					</a>
+					<ul class="post-list">
+						{latestPosts.map((post) => (
+							<li>
+								<a href={`/blog/${post.id}/`}>
+									<h3>{post.data.title}</h3>
+									<time class="date" datetime={post.data.pubDate.toISOString()}>
+										{new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
+											year: 'numeric', month: 'long', day: 'numeric',
+										})}
+									</time>
+									<p>{post.data.description}</p>
+								</a>
+							</li>
+						))}
+					</ul>
 				</section>
 			)}
 
@@ -164,8 +80,27 @@ const latestPost = posts.length > 0 ? posts[0] : null;
 				<p>一个记录自己日常思绪的角落。</p>
 				<p>{SITE_TITLE}</p>
 			</section>
-
 		</main>
 		<Footer />
+
+		<!-- 3. 这里是新的魔法发生的地方 -->
+		<script define:vars={{ lyrics: fayeData.lyrics }}>
+			// 监听浏览器事件，确保在页面加载完成后再执行脚本
+			document.addEventListener('DOMContentLoaded', () => {
+				// lyrics 变量由 Astro 从服务端注入
+				const randomIndex = Math.floor(Math.random() * lyrics.length);
+				const randomQuote = lyrics[randomIndex];
+
+				// 找到我们的占位符元素
+				const quoteElement = document.getElementById('random-quote');
+				const titleElement = document.getElementById('random-title');
+
+				// 把随机选中的内容填进去
+				if (quoteElement && titleElement) {
+					quoteElement.innerText = `“${randomQuote.quote}”`;
+					titleElement.innerText = randomQuote.from;
+				}
+			});
+		</script>
 	</body>
 </html>
